@@ -8,13 +8,12 @@ rust-version = "1.81"
 byte_asm = { path = "../byte_asm" }
 byte_core = { path = "../byte_core" }
 byte_common = { path = "../byte_common" }
-vfs = { git = "https://github.com/seg6/rust-vfs.git", features = ["serde"] }
 
 rfd = "0.11.1"
-egui = "0.30.0"
-eframe = { version = "0.30.0", default-features = false, features = [
+wgpu = { version = "*", features = [ "web" ] }
+eframe = { version = "0.33.3", default-features = false, features = [
     "default_fonts", # embed the default egui fonts
-    "glow",          # use the glow rendering backend. alternative: "wgpu"
+    "wgpu",          # use the wgpu rendering backend. alternative: "glow"
     "persistence",   # enable restoring app state when restarting the app
     "wayland",       # To support Linux (and CI)
 ] }

@@ -1,8 +1,9 @@
-use super::rand;
-use std::collections::HashSet;
-
+use eframe::egui;
 use bitflags::bitflags;
 use byte_core::*;
+
+use super::rand;
+use std::collections::HashSet;
 
 const COLOR_PALETTE: [u32; 16] = [
     0x000000FF, 0xFFFFFFFF, 0x880000FF, 0xAAFFEEFF, 0xCC44CCFF, 0x00CC55FF, 0x0000AAFF, 0xEEEE77FF,

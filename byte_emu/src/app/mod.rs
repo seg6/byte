@@ -1,6 +1,8 @@
 mod file_processor;
 mod ui;
 
+use eframe::egui;
+
 use self::ui::code_editor::Theme as CodeEditorTheme;
 use crate::{
     emu::core::{ByteEmu, ByteInputState},
@@ -28,8 +30,6 @@ pub struct State {
     is_code_editor_open: bool,
     is_emu_controls_open: bool,
     is_memory_monitor_open: bool,
-
-    file_system: vfs::MemoryFS,
 }
 
 pub struct ByteEmuApp {
@@ -52,8 +52,6 @@ impl Default for State {
             is_code_editor_open: true,
             is_emu_controls_open: false,
             is_memory_monitor_open: false,
-
-            file_system: vfs::MemoryFS::new(),
         }
     }
 }
@@ -76,8 +74,6 @@ impl eframe::App for ByteEmuApp {
         self.process_files();
         self.emu.step(input_state);
 
-        // TODO: this might cause some problems when
-        // `State` (specifically `file_system`) gets too big
         if let Some(storage) = frame.storage_mut() {
             self.save(storage);
             storage.flush();
@@ -97,7 +93,7 @@ impl ByteEmuApp {
             state: State::default(),
             texture: cc.egui_ctx.load_texture(
                 "framebuffer",
-                egui::ColorImage::new([64, 64], egui::Color32::BLACK),
+                egui::ColorImage::filled([64, 64], egui::Color32::BLACK),
                 Default::default(),
             ),
         };

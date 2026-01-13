@@ -1,3 +1,4 @@
+use eframe::egui;
 use crate::app::ByteEmuApp;
 
 impl ByteEmuApp {

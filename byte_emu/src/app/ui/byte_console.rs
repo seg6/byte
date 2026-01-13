@@ -1,5 +1,5 @@
+use eframe::egui::{self, load::SizedTexture, Color32, ColorImage};
 use crate::{app::ByteEmuApp, emu::core::ByteInputState};
-use egui::{load::SizedTexture, Color32, ColorImage};
 
 const M: f32 = 14.0; // margin
 const A: f32 = 36.0; // height
@@ -78,10 +78,7 @@ impl ByteEmuApp {
             })
             .collect::<Vec<Color32>>();
 
-        ColorImage {
-            size: [64, 64],
-            pixels,
-        }
+        ColorImage::new([64, 64], pixels)
     }
 }
 
@@ -100,7 +97,7 @@ fn btn(
 
     if ui.is_rect_visible(rect) {
         ui.painter()
-            .rect(rect, 1.0, visuals.bg_fill, visuals.bg_stroke);
+            .rect(rect, 1.0, visuals.bg_fill, visuals.bg_stroke, egui::StrokeKind::Outside);
     }
 
     if response.is_pointer_button_down_on() {

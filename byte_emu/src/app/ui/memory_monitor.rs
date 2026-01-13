@@ -1,5 +1,4 @@
-use egui::{Color32, Label, RichText, ScrollArea};
-
+use eframe::egui::{self, Color32, Label, RichText, ScrollArea};
 use crate::app::ByteEmuApp;
 
 impl ByteEmuApp {

@@ -1,4 +1,4 @@
-use egui::{text::LayoutJob, Color32};
+use eframe::egui::{self, Color32, TextBuffer, text::LayoutJob};
 use std::collections::HashSet;
 
 use crate::app::ByteEmuApp;
@@ -39,10 +39,10 @@ impl ByteEmuApp {
             });
         ui.separator();
 
-        let mut layouter = |ui: &egui::Ui, string: &str, wrap_width: f32| {
-            let mut layout_job = highlight(ui.ctx(), string, self.state.code_editor_theme);
+        let mut layouter = |ui: &egui::Ui, string: &dyn TextBuffer, wrap_width: f32| {
+            let mut layout_job = highlight(ui.ctx(), string.as_str(), self.state.code_editor_theme);
             layout_job.wrap.max_width = wrap_width;
-            ui.fonts(|f| f.layout_job(layout_job))
+            ui.fonts_mut(|f| f.layout_job(layout_job))
         };
 
         egui::ScrollArea::both().show(ui, |ui| {
