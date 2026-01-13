@@ -4,7 +4,7 @@ mod common;
 
 #[test]
 fn test_6502_functional_tests() {
-    let mut cpu = common::init_cpu();
+    let mut cpu = common::cpu::CPU::<common::TestBus>::default();
 
     cpu.reg.pc = 0x0400;
     cpu.load(

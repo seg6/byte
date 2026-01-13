@@ -1,18 +1,18 @@
 pub use byte_core::*;
 
-pub struct MockRAM {
-    pub data: Vec<u8>,
+pub struct TestBus {
+    pub data: [u8; 0x10000],
 }
 
-impl MockRAM {
-    pub fn new(size: usize) -> Self {
+impl Default for TestBus {
+    fn default() -> Self {
         Self {
-            data: vec![0; size],
+            data: [0u8; 0x10000],
         }
     }
 }
 
-impl bus::Peripheral for MockRAM {
+impl bus::Bus for TestBus {
     fn read(&self, addr: u16) -> u8 {
         self.data[addr as usize]
     }
@@ -22,23 +22,28 @@ impl bus::Peripheral for MockRAM {
     }
 }
 
-pub fn init_cpu() -> cpu::CPU {
-    let mut cpu = cpu::CPU::default();
-
-    cpu.bus
-        .attach(0x0000, 0xffff, MockRAM::new(0x10000))
-        .unwrap();
-    cpu
-}
-
-#[allow(dead_code)]
-pub fn execute_nsteps(config: fn(&mut cpu::CPU), program: &[u8], addr: u16, n: usize) -> cpu::CPU {
-    let mut cpu = init_cpu();
+pub fn execute_with_bus<B: bus::Bus + Default>(
+    config: impl FnOnce(&mut cpu::CPU<B>),
+    program: &[u8],
+    addr: u16,
+    steps: usize,
+) -> cpu::CPU<B> {
+    let mut cpu = cpu::CPU::<B>::default();
     config(&mut cpu);
 
     cpu.reg.pc = addr;
     cpu.load(program, addr);
 
-    (0..n).for_each(|_| cpu.step().unwrap());
+    (0..steps).for_each(|_| cpu.step().unwrap());
     cpu
+}
+
+#[allow(dead_code)]
+pub fn execute(
+    config: impl FnOnce(&mut cpu::CPU<TestBus>),
+    program: &[u8],
+    addr: u16,
+    n: usize,
+) -> cpu::CPU<TestBus> {
+    execute_with_bus::<TestBus>(config, program, addr, n)
 }

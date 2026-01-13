@@ -49,13 +49,13 @@ pub struct Registers {
 }
 
 #[derive(Default)]
-pub struct CPU {
-    pub bus: Bus,
+pub struct CPU<B: Bus> {
+    pub bus: B,
     pub cycle: u64,
     pub reg: Registers,
 }
 
-impl CPU {
+impl<B: Bus> CPU<B> {
     pub fn load(&mut self, program: &[u8], start: u16) {
         program
             .iter()
@@ -295,7 +295,7 @@ impl CPU {
 
 // Opcode implementations
 
-impl CPU {
+impl<B: Bus> CPU<B> {
     #[inline]
     fn _asl(&mut self, value: u8) -> u8 {
         self.set_flag(Flags::CARRY, value >> 7 == 1);
