@@ -1,21 +1,11 @@
 use eframe::egui;
 use bitflags::bitflags;
-use byte_core::{bus::Bus, *};
+use byte_core::{bus::Bus, cpu};
 use std::collections::HashSet;
 
-use super::rand;
-use super::bus::ByteBus;
-
-const COLOR_PALETTE: [u32; 16] = [
-    0x000000FF, 0xFFFFFFFF, 0x880000FF, 0xAAFFEEFF, 0xCC44CCFF, 0x00CC55FF, 0x0000AAFF, 0xEEEE77FF,
-    0x664400FF, 0xFF7777FF, 0x333333FF, 0x777777FF, 0xAAFF66FF, 0x0088FFFF, 0x0088FFFF, 0xBBBBBBFF,
-];
-const INSTRUCTIONS_PER_FRAME: usize = 6400000 / 60;
-
-const REG_VIDEO: u16 = 0xfd;
-const REG_RANDOM: u16 = 0xfe;
-const REG_INPUT: u16 = 0xff;
-const FRAMEBUFFER_SIZE: usize = 64 * 64;
+use crate::emu::rand;
+use crate::emu::bus::ByteBus;
+use crate::constants::{system, mmio};
 
 pub struct ByteEmu {
     cpu: cpu::CPU<ByteBus>,
@@ -72,23 +62,23 @@ impl ByteEmu {
         self.cpu.interrupt(cpu::Interrupt::RST);
     }
 
-    pub fn framebuffer(&self) -> [u32; FRAMEBUFFER_SIZE] {
-        let mut frame = [0u32; FRAMEBUFFER_SIZE];
-        let video_ptr = (self.cpu.bus.read(REG_VIDEO) as u16 & 0xf) << 0xc;
-        let video_mem = self.get_memory_region(video_ptr, FRAMEBUFFER_SIZE);
+    pub fn framebuffer(&self) -> [u32; system::FRAMEBUFFER_SIZE] {
+        let mut frame = [0u32; system::FRAMEBUFFER_SIZE];
+        let video_ptr = (self.cpu.bus.read(mmio::VID) as u16 & 0xf) << 0xc;
+        let video_mem = self.get_memory_region(video_ptr, system::FRAMEBUFFER_SIZE);
 
         frame.iter_mut().zip(video_mem).for_each(|(pixel, color)| {
-            *pixel = COLOR_PALETTE[(color & 0xf) as usize];
+            *pixel = system::COLOR_PALETTE[(color & 0xf) as usize];
         });
         frame
     }
 
     pub fn step(&mut self, input_state: ByteInputState) {
-        self.cpu.bus.write(REG_INPUT, input_state.bits());
+        self.cpu.bus.write(mmio::INP, input_state.bits());
 
-        for _ in 0..INSTRUCTIONS_PER_FRAME {
+        for _ in 0..system::INSTRUCTIONS_PER_FRAME {
             if let Some(n) = self.rand.next() {
-                self.cpu.bus.write(REG_RANDOM, n as u8);
+                self.cpu.bus.write(mmio::RNG, n as u8);
             }
             if let Err(err) = self.cpu.step() {
                 log::error!("{err}");

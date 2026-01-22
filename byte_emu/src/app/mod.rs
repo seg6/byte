@@ -6,7 +6,7 @@ use eframe::egui;
 use self::ui::code_editor::Theme as CodeEditorTheme;
 use crate::{
     emu::core::{ByteEmu, ByteInputState},
-    DEFAULT_BINARY, DEFAULT_SOURCE,
+    constants::system::{DEFAULT_BINARY, DEFAULT_SOURCE},
 };
 use file_processor::FileProcesser;
 
