@@ -21,7 +21,7 @@ pub enum FileProcesserMessage {
 pub struct State {
     // TODO: this is getting out of hand
     text: String,
-    memory_window_range: (u16, u16),
+    memory_window_range: (u16, usize),
     memory_window_range_str: (String, String),
     memory_window_text_area: String,
     code_editor_theme: CodeEditorTheme,

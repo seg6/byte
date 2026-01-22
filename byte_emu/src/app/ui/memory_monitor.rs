@@ -1,5 +1,5 @@
-use eframe::egui::{self, Color32, Label, RichText, ScrollArea};
 use crate::app::ByteEmuApp;
+use eframe::egui::{self, Color32, Label, RichText, ScrollArea};
 
 impl ByteEmuApp {
     pub fn show_memory_monitor(&mut self, ctx: &egui::Context) {
@@ -31,9 +31,9 @@ impl ByteEmuApp {
 
         if let (Ok(start), Ok(size)) = (
             u16::from_str_radix(addr_str.trim_start_matches("0x"), 16),
-            u32::from_str_radix(size_str.trim_start_matches("0x"), 16),
+            usize::from_str_radix(size_str.trim_start_matches("0x"), 16),
         ) {
-            self.state.memory_window_range = (start, size.saturating_sub(1) as u16);
+            self.state.memory_window_range = (start, size);
         }
 
         ScrollArea::both().show(ui, |ui| {
@@ -44,8 +44,9 @@ impl ByteEmuApp {
     }
 
     fn ui_memory_monitor_scroll(&mut self, ui: &mut egui::Ui) {
+        let (start, size) = self.state.memory_window_range;
         let mut count = self.state.memory_window_range.0 as usize;
-        let mem_slice = self.emu.get_memory_region(self.state.memory_window_range);
+        let mem_slice = self.emu.get_memory_region(start, size);
 
         mem_slice.chunks(16).for_each(|chunk| {
             let ascii = format!(

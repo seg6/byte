@@ -1,9 +1,10 @@
 use eframe::egui;
 use bitflags::bitflags;
-use byte_core::*;
+use byte_core::{bus::Bus, *};
+use std::collections::HashSet;
 
 use super::rand;
-use std::collections::HashSet;
+use super::bus::ByteBus;
 
 const COLOR_PALETTE: [u32; 16] = [
     0x000000FF, 0xFFFFFFFF, 0x880000FF, 0xAAFFEEFF, 0xCC44CCFF, 0x00CC55FF, 0x0000AAFF, 0xEEEE77FF,
@@ -17,7 +18,7 @@ const REG_INPUT: u16 = 0xff;
 const FRAMEBUFFER_SIZE: usize = 64 * 64;
 
 pub struct ByteEmu {
-    cpu: cpu::CPU,
+    cpu: cpu::CPU<ByteBus>,
     rand: Box<dyn Iterator<Item = u32>>,
 }
 
@@ -58,13 +59,8 @@ impl From<HashSet<egui::Key>> for ByteInputState {
 
 impl Default for ByteEmu {
     fn default() -> Self {
-        let mut cpu = cpu::CPU::default();
-        cpu.bus
-            .attach(0x0000, 0xffff, super::ram::Ram::default())
-            .unwrap();
-
         Self {
-            cpu,
+            cpu: cpu::CPU::<ByteBus>::default(),
             rand: Box::new(rand::random_numbers(rand::random_seed() as u32)),
         }
     }
@@ -79,10 +75,10 @@ impl ByteEmu {
     pub fn framebuffer(&self) -> [u32; FRAMEBUFFER_SIZE] {
         let mut frame = [0u32; FRAMEBUFFER_SIZE];
         let video_ptr = (self.cpu.bus.read(REG_VIDEO) as u16 & 0xf) << 0xc;
+        let video_mem = self.get_memory_region(video_ptr, FRAMEBUFFER_SIZE);
 
-        frame.iter_mut().enumerate().for_each(|(i, p)| {
-            let color = self.cpu.bus.read(video_ptr + i as u16) & 0xf;
-            *p = COLOR_PALETTE[color as usize];
+        frame.iter_mut().zip(video_mem).for_each(|(pixel, color)| {
+            *pixel = COLOR_PALETTE[(color & 0xf) as usize];
         });
         frame
     }
@@ -102,7 +98,7 @@ impl ByteEmu {
         self.cpu.interrupt(cpu::Interrupt::IRQ);
     }
 
-    pub fn get_memory_region(&self, range: (u16, u16)) -> &[u8] {
-        self.cpu.bus.get_memory_region(range)
+    pub fn get_memory_region(&self, start: u16, size: usize) -> &[u8] {
+        self.cpu.bus.get_memory_region(start, size)
     }
 }
