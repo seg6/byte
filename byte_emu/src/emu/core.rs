@@ -62,15 +62,9 @@ impl ByteEmu {
         self.cpu.interrupt(cpu::Interrupt::RST);
     }
 
-    pub fn framebuffer(&self) -> [u32; system::FRAMEBUFFER_SIZE] {
-        let mut frame = [0u32; system::FRAMEBUFFER_SIZE];
-        let video_ptr = (self.cpu.bus.read(mmio::VID) as u16 & 0xf) << 0xc;
-        let video_mem = self.get_memory_region(video_ptr, system::FRAMEBUFFER_SIZE);
-
-        frame.iter_mut().zip(video_mem).for_each(|(pixel, color)| {
-            *pixel = system::COLOR_PALETTE[(color & 0xf) as usize];
-        });
-        frame
+    pub fn get_vram(&self) -> &[u8] {
+        let vram_ptr = (self.cpu.bus.read(mmio::VID) as u16 & 0xf) << 0xc;
+        self.get_memory_region(vram_ptr, system::FRAMEBUFFER_SIZE)
     }
 
     pub fn step(&mut self, input_state: ByteInputState) {

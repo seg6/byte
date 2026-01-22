@@ -1,13 +1,28 @@
 pub mod system {
+    use eframe::egui::Color32;
+
     pub const DEFAULT_BINARY: &[u8; 1 << 16] = include_bytes!("../assets/demo.bin");
     pub const DEFAULT_SOURCE: &str = include_str!("../assets/demo.s");
 
     pub const W: usize = 64;
     pub const H: usize = 64;
-    pub const COLOR_PALETTE: [u32; 16] = [
-        0x000000FF, 0xFFFFFFFF, 0x880000FF, 0xAAFFEEFF, 0xCC44CCFF, 0x00CC55FF, 0x0000AAFF,
-        0xEEEE77FF, 0x664400FF, 0xFF7777FF, 0x333333FF, 0x777777FF, 0xAAFF66FF, 0x0088FFFF,
-        0x0088FFFF, 0xBBBBBBFF,
+    pub const COLOR_PALETTE: [Color32; 16] = [
+        Color32::from_rgb(0x00, 0x00, 0x00),
+        Color32::from_rgb(0xFF, 0xFF, 0xFF),
+        Color32::from_rgb(0x88, 0x00, 0x00),
+        Color32::from_rgb(0xAA, 0xFF, 0xEE),
+        Color32::from_rgb(0xCC, 0x44, 0xCC),
+        Color32::from_rgb(0x00, 0xCC, 0x55),
+        Color32::from_rgb(0x00, 0x00, 0xAA),
+        Color32::from_rgb(0xEE, 0xEE, 0x77),
+        Color32::from_rgb(0x66, 0x44, 0x00),
+        Color32::from_rgb(0xFF, 0x77, 0x77),
+        Color32::from_rgb(0x33, 0x33, 0x33),
+        Color32::from_rgb(0x77, 0x77, 0x77),
+        Color32::from_rgb(0xAA, 0xFF, 0x66),
+        Color32::from_rgb(0x00, 0x88, 0xFF),
+        Color32::from_rgb(0x00, 0x88, 0xFF),
+        Color32::from_rgb(0xBB, 0xBB, 0xBB),
     ];
     pub const FRAMEBUFFER_SIZE: usize = W * H;
 

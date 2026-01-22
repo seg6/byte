@@ -1,5 +1,5 @@
-use eframe::egui::{self, load::SizedTexture, Color32, ColorImage};
-use crate::{app::ByteEmuApp, emu::core::ByteInputState};
+use crate::{app::ByteEmuApp, constants::system, emu::core::ByteInputState};
+use eframe::egui::{self, load::SizedTexture, ColorImage};
 
 const M: f32 = 14.0; // margin
 const A: f32 = 36.0; // height
@@ -9,8 +9,9 @@ const K: f32 = S - 2.0 * M - 4.0 * A - B - B / 4.0; // uhh
 
 impl ByteEmuApp {
     pub fn show_byte_console(&mut self, ctx: &egui::Context, input_state: &mut ByteInputState) {
-        let framebuffer = self.framebuffer();
-        self.texture.set(framebuffer, egui::TextureOptions::NEAREST);
+        let frame = self.generate_new_frame();
+        self.framebuffer_texture
+            .set(frame, egui::TextureOptions::NEAREST);
 
         egui::Window::new("byte console")
             .resizable(false)
@@ -39,7 +40,7 @@ impl ByteEmuApp {
             ui.add_space(M);
             ui.horizontal(|ui| {
                 ui.add_space(M);
-                ui.image(SizedTexture::new(self.texture.id(), egui::vec2(S, S)));
+                ui.image(SizedTexture::new(self.framebuffer_texture.id(), egui::vec2(S, S)));
                 ui.add_space(M);
             });
             ui.add_space(M * 3.0);
@@ -67,18 +68,13 @@ impl ByteEmuApp {
         });
     }
 
-    fn framebuffer(&mut self) -> ColorImage {
-        let pixels = self
-            .emu
-            .framebuffer()
-            .iter()
-            .map(|c| {
-                let [r, g, b, a] = c.to_be_bytes();
-                Color32::from_rgba_unmultiplied(r, g, b, a)
-            })
-            .collect::<Vec<Color32>>();
+    fn generate_new_frame(&mut self) -> ColorImage {
+        self.framebuffer
+            .iter_mut()
+            .zip(self.emu.get_vram())
+            .for_each(|(dest, src)| *dest = system::COLOR_PALETTE[(src & 0xf) as usize]);
 
-        ColorImage::new([64, 64], pixels)
+        ColorImage::new([system::W, system::H], self.framebuffer.to_vec())
     }
 }
 
@@ -96,8 +92,13 @@ fn btn(
     };
 
     if ui.is_rect_visible(rect) {
-        ui.painter()
-            .rect(rect, 1.0, visuals.bg_fill, visuals.bg_stroke, egui::StrokeKind::Outside);
+        ui.painter().rect(
+            rect,
+            1.0,
+            visuals.bg_fill,
+            visuals.bg_stroke,
+            egui::StrokeKind::Outside,
+        );
     }
 
     if response.is_pointer_button_down_on() {

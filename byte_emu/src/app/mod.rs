@@ -5,8 +5,8 @@ use eframe::egui;
 
 use self::ui::code_editor::Theme as CodeEditorTheme;
 use crate::{
+    constants::system,
     emu::core::{ByteEmu, ByteInputState},
-    constants::system::{DEFAULT_BINARY, DEFAULT_SOURCE},
 };
 use file_processor::FileProcessor;
 
@@ -36,13 +36,14 @@ pub struct ByteEmuApp {
     emu: ByteEmu,
     file_processor: FileProcessor<FileProcessorMessage>,
     state: State,
-    texture: egui::TextureHandle,
+    framebuffer: [egui::Color32; system::FRAMEBUFFER_SIZE],
+    framebuffer_texture: egui::TextureHandle,
 }
 
 impl Default for State {
     fn default() -> Self {
         Self {
-            text: DEFAULT_SOURCE.to_string(),
+            text: system::DEFAULT_SOURCE.to_string(),
             memory_window_range: (0, 0x100),
             memory_window_range_str: ("0x0000".into(), "0x100".into()),
             memory_window_text_area: String::new(),
@@ -87,26 +88,29 @@ impl ByteEmuApp {
     pub fn new(cc: &eframe::CreationContext<'_>, program: Option<(Vec<u8>, u16)>) -> Self {
         cc.egui_ctx.set_visuals(egui::Visuals::dark());
 
+        let framebuffer = [egui::Color32::BLACK; system::FRAMEBUFFER_SIZE];
+        let framebuffer_texture = cc.egui_ctx.load_texture(
+            "framebuffer",
+            egui::ColorImage::new([system::W, system::H], framebuffer.to_vec()),
+            Default::default(),
+        );
+
         let mut app = Self {
             emu: ByteEmu::default(),
             file_processor: FileProcessor::new(),
             state: State::default(),
-            texture: cc.egui_ctx.load_texture(
-                "framebuffer",
-                egui::ColorImage::filled([64, 64], egui::Color32::BLACK),
-                Default::default(),
-            ),
+            framebuffer,
+            framebuffer_texture,
         };
 
-        if let Some(storage) = cc.storage {
-            if let Some(state) = eframe::get_value(storage, eframe::APP_KEY) {
+        if let Some(storage) = cc.storage
+            && let Some(state) = eframe::get_value(storage, eframe::APP_KEY) {
                 app.state = state;
             }
-        }
 
         match program {
             Some((program, start)) => app.emu.load_program(&program, start),
-            None => app.emu.load_program(DEFAULT_BINARY, 0x0000),
+            None => app.emu.load_program(system::DEFAULT_BINARY, 0x0000),
         }
 
         app

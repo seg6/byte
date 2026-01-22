@@ -98,12 +98,11 @@ impl Highlighter {
                 continue;
             }
 
-            if let Some(next_token) = tokens_iter.peek() {
-                if next_token.kind == Colon {
+            if let Some(next_token) = tokens_iter.peek()
+                && next_token.kind == Colon {
                     label_table.insert(token.text(src));
                     continue;
                 }
-            }
 
             variable_table.insert(token.text(src));
         }
