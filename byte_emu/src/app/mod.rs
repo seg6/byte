@@ -8,10 +8,10 @@ use crate::{
     emu::core::{ByteEmu, ByteInputState},
     constants::system::{DEFAULT_BINARY, DEFAULT_SOURCE},
 };
-use file_processor::FileProcesser;
+use file_processor::FileProcessor;
 
 #[derive(Debug)]
-pub enum FileProcesserMessage {
+pub enum FileProcessorMessage {
     BinaryFile((String, Vec<u8>)),
     SourceFile((String, Vec<u8>)),
 }
@@ -34,7 +34,7 @@ pub struct State {
 
 pub struct ByteEmuApp {
     emu: ByteEmu,
-    file_processer: FileProcesser<FileProcesserMessage>,
+    file_processor: FileProcessor<FileProcessorMessage>,
     state: State,
     texture: egui::TextureHandle,
 }
@@ -89,7 +89,7 @@ impl ByteEmuApp {
 
         let mut app = Self {
             emu: ByteEmu::default(),
-            file_processer: FileProcesser::new(),
+            file_processor: FileProcessor::new(),
             state: State::default(),
             texture: cc.egui_ctx.load_texture(
                 "framebuffer",
@@ -113,16 +113,16 @@ impl ByteEmuApp {
     }
 
     fn process_files(&mut self) {
-        self.file_processer
+        self.file_processor
             .consume_messages()
             .iter()
             .for_each(|m| match m {
-                FileProcesserMessage::BinaryFile((_, data)) => {
+                FileProcessorMessage::BinaryFile((_, data)) => {
                     // load the program
                     // and then issue a RST interrupt
                     self.emu.load_program(data, 0x0000);
                 }
-                FileProcesserMessage::SourceFile((_, data)) => {
+                FileProcessorMessage::SourceFile((_, data)) => {
                     self.state.text = String::from_utf8_lossy(data).to_string()
                 }
             });

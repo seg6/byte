@@ -1,12 +1,12 @@
 use std::sync::mpsc;
 
 #[derive(Debug)]
-pub struct FileProcesser<T> {
+pub struct FileProcessor<T> {
     tx: mpsc::Sender<T>,
     rx: mpsc::Receiver<T>,
 }
 
-impl<T> FileProcesser<T>
+impl<T> FileProcessor<T>
 where
     T: Send + 'static,
 {

@@ -1,5 +1,5 @@
 use eframe::egui;
-use crate::app::{ByteEmuApp, FileProcesserMessage, State};
+use crate::app::{ByteEmuApp, FileProcessorMessage, State};
 
 impl ByteEmuApp {
     pub fn show_menu_bar(&mut self, ctx: &egui::Context) {
@@ -21,15 +21,15 @@ impl ByteEmuApp {
 
     fn ui_file_button(&mut self, ui: &mut egui::Ui) {
         ui.menu_button("File", |ui| {
-            use FileProcesserMessage::*;
+            use FileProcessorMessage::*;
 
             if ui.button("Load binary program").clicked() {
-                self.file_processer
+                self.file_processor
                     .read(|name, data| BinaryFile((name, data)));
                 ui.close();
             }
             if ui.button("Load source file").clicked() {
-                self.file_processer
+                self.file_processor
                     .read(|name, data| SourceFile((name, data)));
                 ui.close();
             }
