@@ -6,17 +6,19 @@ The `byte_core` crate emulates the [MOS Technology 6502](https://en.wikipedia.or
 ```rust
 use byte_core::*;
 
-struct RAM {
-    pub data: Vec<u8>,
+struct Bus {
+    data: [u8; 0x10000],
 }
 
-impl RAM {
-    pub fn new(size: usize) -> Self {
-        Self { data: vec![0; size] }
+impl Default for Bus {
+    fn default() -> Self {
+        Self {
+            data: [0u8; 0x10000],
+        }
     }
 }
 
-impl bus::Peripheral for RAM {
+impl bus::Bus for Bus {
     fn read(&self, addr: u16) -> u8 {
         self.data[addr as usize]
     }
@@ -27,19 +29,21 @@ impl bus::Peripheral for RAM {
 }
 
 fn main() {
-    let mut cpu = cpu::CPU::default();
-    cpu.bus
-        .attach(0x0000, 0xffff, RAM::new(0x10000))
-        .unwrap();
+    let mut cpu = cpu::CPU::<Bus>::default();
 
     cpu.reg.pc = 0x8000;
-    cpu.load(&[
-        0xa9, 0xc0, // lda #$c0
-        0xaa,       // tax
-        0xe8,       // inx
-        0x00,       // brk
-    ], 0x8000);
-    for _ in 0..4 { cpu.step(); }
+    cpu.load(
+        &[
+            0xa9, 0xc0, // lda #$c0
+            0xaa,       // tax
+            0xe8,       // inx
+            0x00,       // brk
+        ],
+        0x8000,
+    );
+    for _ in 0..4 {
+        cpu.step().unwrap();
+    }
 
     println!("{:#x?}", cpu.reg);
 }
