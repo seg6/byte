@@ -9,10 +9,10 @@ byte_core = { path = "../byte_core" }
 byte_common = { path = "../byte_common" }
 
 rfd = "0.11.1"
-wgpu = "27"
+wgpu = { version = "*", features = [ "webgl" ]}
 eframe = { version = "0.33.3", default-features = false, features = [
     "default_fonts", # embed the default egui fonts
-    "glow",          # use the wgpu rendering backend. alternative: "wgpu"
+    "wgpu",          # use the wgpu rendering backend. alternative: "glow"
     "persistence",   # enable restoring app state when restarting the app
     "wayland",       # To support Linux (and CI)
 ] }
